@@ -1,0 +1,6 @@
+hr {
+  border: none;
+  border-top: 2px solid #000; /* visible line */
+  opacity: 1;               /* remove Bootstrap fade */
+  margin: 1rem 0;
+}
