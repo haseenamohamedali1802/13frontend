@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./Home.css";
+
+const API_URL = process.env.REACT_APP_API_URL || '';
 
 function Home() {
   const [data, setData] = useState([]);
@@ -13,13 +15,9 @@ function Home() {
   const [endDate, setEndDate] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, startDate, endDate, searchQuery]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
   try {
-    let url = `/api/getApplicantsData/?page=${currentPage}`;
+    let url = `${API_URL}/api/getApplicantsData/?page=${currentPage}`;
 
     if (startDate && endDate) {
       const start = startDate.toISOString().split("T")[0];
@@ -34,16 +32,16 @@ function Home() {
     const response = await fetch(url);
     const jsonData = await response.json();
 
-    setData(jsonData.data);
-    setTotalPages(jsonData.total_pages);
+    setData(jsonData.data || []);
+    setTotalPages(jsonData.total_pages || 1);
   } catch (error) {
     console.error("Error fetching data", error);
   }
-};
-
-useEffect(() => {
-  fetchData();
 }, [currentPage, startDate, endDate, searchQuery]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
 
 

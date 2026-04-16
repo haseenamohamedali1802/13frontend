@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import axios from 'axios';
+import api from '../../api/axiosConfig';
 import { useNavigate } from "react-router-dom";
 
 function LoginScreen() {
@@ -12,7 +12,7 @@ function LoginScreen() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post("/api/login/", {
+            const response = await api.post("/api/login/", {
                 username,
                 password
             });

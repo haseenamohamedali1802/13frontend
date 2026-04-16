@@ -1,86 +1,68 @@
-import React, { useEffect, useState,useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import Chart from 'chart.js/auto';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
+
+const API_URL = process.env.REACT_APP_API_URL || '';
 
 function Stats() {
-    const [selectedStatus,setSelectedStatus]=useState('');
-    const [chartData,setChartData]=useState({labels: [],  total_requests: []});
+    const [selectedStatus, setSelectedStatus] = useState('');
     const canvasRef = useRef(null);
     const chartRef = useRef(null);
     const canvasRef2 = useRef(null);
     const chartRef2 = useRef(null);
 
-    useEffect(()=>{
-        fetchData(selectedStatus);
-    },[selectedStatus]);
-
-    const fetchData=async(status)=>{
-        try{
-            const url = `/api/connectionrequestdata/?status=${status}`;
-            const response=await fetch(url);
-            const data= await response.json();
-            setChartData(data);
-            updateChart(data);
-        }
-        catch(error){
-            console.log("Error fetching data",error)
-        }
-    };
-
-    const createChart = (data) =>{
-        const ctx=canvasRef.current.getContext('2d');
-        const ctx2=canvasRef2.current.getContext('2d');
-        chartRef.current=new Chart(ctx,{
-            type:'pie',
-            data:{
-                labels:data.labels,
-                datasets:[{
-                    label:'Number of Connection Requests by Month',
-                    data:data.total_requests,
-                    backgroundColor:'rgba(54,162,235,0.2)',
-                    borderColor:'rgba(54,162,235,1)',
-                    borderWidth:1
+    const createChart = useCallback((data) => {
+        const ctx = canvasRef.current.getContext('2d');
+        const ctx2 = canvasRef2.current.getContext('2d');
+        chartRef.current = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Number of Connection Requests by Month',
+                    data: data.total_requests,
+                    backgroundColor: 'rgba(54,162,235,0.2)',
+                    borderColor: 'rgba(54,162,235,1)',
+                    borderWidth: 1
                 }]
             },
-            options:{
-                scales:{
-                    yAxes:[{
-                        ticks:{
-                            beginAtZero:true
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
                         }
                     }]
                 }
             }
         });
 
-         chartRef2.current=new Chart(ctx2,{
-            type:'bar',
-            data:{
-                labels:data.labels,
-                datasets:[{
-                    label:'Number of Connection Requests by Month',
-                    data:data.total_requests,
-                    backgroundColor:'rgba(54,162,235,0.2)',
-                    borderColor:'rgba(54,162,235,1)',
-                    borderWidth:1
+        chartRef2.current = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Number of Connection Requests by Month',
+                    data: data.total_requests,
+                    backgroundColor: 'rgba(54,162,235,0.2)',
+                    borderColor: 'rgba(54,162,235,1)',
+                    borderWidth: 1
                 }]
             },
-            options:{
-                scales:{
-                    yAxes:[{
-                        ticks:{
-                            beginAtZero:true
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
                         }
                     }]
                 }
             }
         });
+    }, []);
 
-
-    };
-
-    const updateChart =(data) => {
-        if (chartRef.current){
+    const updateChart = useCallback((data) => {
+        if (chartRef.current) {
             chartRef.current.data.labels = data.labels;
             chartRef.current.data.datasets[0].data = data.total_requests;
             chartRef.current.update();
@@ -89,10 +71,26 @@ function Stats() {
             chartRef2.current.data.datasets[0].data = data.total_requests;
             chartRef2.current.update();
         }
-        else{
+        else {
             createChart(data);
         }
-    }
+    }, [createChart]);
+
+    const fetchData = useCallback(async (status) => {
+        try {
+            const url = `${API_URL}/api/connectionrequestdata/?status=${status}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            updateChart(data);
+        }
+        catch (error) {
+            console.log("Error fetching data", error)
+        }
+    }, [updateChart]);
+
+    useEffect(() => {
+        fetchData(selectedStatus);
+    }, [selectedStatus, fetchData]);
 
     const handleStatusChange = (event) => {
         setSelectedStatus(event.target.value);

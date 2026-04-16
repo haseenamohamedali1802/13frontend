@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { Row, Col, Form, Button, Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Messages from "../Messages";
+
+const API_URL = process.env.REACT_APP_API_URL || '';
 
 function EditApplicant() {
   const { id } = useParams();
@@ -11,45 +13,21 @@ function EditApplicant() {
   const [connectionData, setConnectionData] = useState({});
   const [message, setMessage] = useState("");
 
-  const [applicant, setApplicant] = useState({
-    Applicant_Name: "",
-    Gender: "",
-    District: "",
-    State: "",
-    Pincode: "",
-    Ownership: "",
-    GotId_Type: "",
-    ID_Number: "",
-    Category: "",
-  });
-
-  const [connection, setConnection] = useState({
-    Applicant: "",
-    Load_Applied: "",
-    Date_Of_Application: "",
-    Date_of_Approval: "",
-    Modified_Date: "",
-    Status: "",
-    Reviewer_Id: "",
-    Reviewer_Name: "",
-    Reviewer_Comment: "",
-  });
-
-  const fetchApplicantData = async () => {
+  const fetchApplicantData = useCallback(async () => {
   try {
-    const response = await fetch(`/api/update_applicant/${id}/`);
+    const response = await fetch(`${API_URL}/api/update_applicant/${id}/`);
     const data = await response.json();
     setApplicantData(data.applicant);
     setConnectionData(data.connection);
   } catch (error) {
     console.error("Error fetching applicant data:", error);
   }
-};
+}, [id]);
 
 
   useEffect(() => {
     fetchApplicantData();
-  }, []);
+  }, [fetchApplicantData]);
 
  const handleChange = (e) => {
   const { name, value } = e.target;
@@ -76,7 +54,7 @@ function EditApplicant() {
         return;
       }
 
-   const response = await fetch(`/api/update_applicant/${id}/`,
+   const response = await fetch(`${API_URL}/api/update_applicant/${id}/`,
   {
     method: "POST",
     headers: {
